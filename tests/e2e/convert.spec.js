@@ -59,6 +59,10 @@ test.beforeEach(async ({ page }, testInfo) => {
     if (!url.startsWith('blob:') && !url.startsWith('data:')) {
       expect(url.startsWith(`${origin}/video-converter/`), `unexpected request: ${url}`).toBe(true);
     }
+    // The app's own files carry the build id, so a new release never runs with cached old ones.
+    if (url.includes('/video-converter/src/')) {
+      expect(url, `no build id: ${url}`).toMatch(/\?v=[0-9a-f]{10}$/);
+    }
   });
   page.on('response', (response) => {
     expect(response.status(), `failed: ${response.url()}`).toBeLessThan(400);
