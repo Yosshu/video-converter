@@ -17,176 +17,214 @@
     <meta
       name="description"
       content="iPhoneの画面録画を、互換性の高いH.264形式のMP4に変換します。変換はブラウザの中で行い、動画はどこにもアップロードしません。"
+      data-i18n-attr="content:meta.description"
     />
-    <title>動画変換ツール</title>
+    <title data-i18n="meta.title">動画変換ツール</title>
     <link rel="icon" href="assets/icon.svg" type="image/svg+xml" />
     <link rel="stylesheet" href="src/style.css" />
+    <!--
+      The page is written in Japanese; English (and the language switch) is
+      handled by src/lang-boot.js and src/i18n.js with the text in src/strings.js.
+      Elements marked with data-i18n hold plain text only.
+    -->
+    <script src="src/lang-boot.js"></script>
     <script type="module" src="src/main.js"></script>
   </head>
   <body>
     <div class="page">
       <header class="header">
-        <h1>動画変換ツール</h1>
-        <p class="lead">iPhoneの画面録画を、互換性の高いH.264形式のMP4に変換します</p>
-        <ul class="badges" aria-label="特徴">
-          <li>ブラウザの中で変換</li>
-          <li>アップロードなし</li>
-          <li>Windows・Ubuntu・Mac で再生できる形式</li>
+        <div class="header-top">
+          <h1 data-i18n="app.title">動画変換ツール</h1>
+          <div class="lang-switch" role="group" aria-label="言語 / Language">
+            <button type="button" data-set-lang="ja" lang="ja" aria-pressed="true">日本語</button>
+            <button type="button" data-set-lang="en" lang="en" aria-pressed="false">English</button>
+          </div>
+        </div>
+        <p class="lead" data-i18n="app.lead">iPhoneの画面録画を、互換性の高いH.264形式のMP4に変換します</p>
+        <ul class="badges" aria-label="特徴" data-i18n-attr="aria-label:badges.label">
+          <li data-i18n="badges.browser">ブラウザの中で変換</li>
+          <li data-i18n="badges.noUpload">アップロードなし</li>
+          <li data-i18n="badges.plays">Windows・Ubuntu・Mac で再生できる形式</li>
         </ul>
       </header>
 
       <main>
         <noscript>
-          <p class="message message-error">このツールを使うには、ブラウザの JavaScript を有効にしてください。</p>
+          <p class="message message-error">
+            このツールを使うには、ブラウザの JavaScript を有効にしてください。<br />
+            Please enable JavaScript in your browser to use this tool.
+          </p>
         </noscript>
-        <div id="unsupported" class="message message-error" role="alert" hidden></div>
+        <div id="unsupported" class="message-slot"></div>
 
         <!-- 1. Choosing a video -->
         <section class="card" aria-labelledby="select-title">
-          <h2 id="select-title"><span class="step" aria-hidden="true">1</span>動画を選ぶ</h2>
+          <h2 id="select-title">
+            <span class="step" aria-hidden="true">1</span><span data-i18n="select.title">動画を選ぶ</span>
+          </h2>
           <div id="dropzone" class="dropzone">
             <svg class="dropzone-icon" viewBox="0 0 48 48" aria-hidden="true">
               <rect x="6" y="10" width="28" height="28" rx="5" />
               <path d="M34 20l9-5v18l-9-5" />
               <path d="M20 19v10M15 24l5 5 5-5" />
             </svg>
-            <p class="dropzone-title">ここに動画をドラッグ＆ドロップ</p>
-            <p class="dropzone-or">または</p>
-            <button type="button" id="pick" class="button button-primary">動画を選ぶ</button>
+            <p class="dropzone-title" data-i18n="select.drop">ここに動画をドラッグ＆ドロップ</p>
+            <p class="dropzone-or" data-i18n="select.or">または</p>
+            <button type="button" id="pick" class="button button-primary" data-i18n="select.button">動画を選ぶ</button>
             <input type="file" id="file-input" accept="video/*,.mp4,.mov,.m4v" hidden />
           </div>
           <ul class="hints">
-            <li>対応形式：MP4・MOV・M4V（iPhone の画面収録やカメラの動画など）</li>
-            <li>ファイルサイズ：2GB まで（スマートフォンでは 500MB 程度までが目安）</li>
-            <li>一度に変換できるのは 1 本です</li>
+            <li data-i18n="select.formats">対応形式：MP4・MOV・M4V（iPhone の画面収録やカメラの動画など）</li>
+            <li data-i18n="select.size">ファイルサイズ：2GB まで（スマートフォンでは 500MB 程度までが目安）</li>
+            <li data-i18n="select.one">一度に変換できるのは 1 本です</li>
           </ul>
           <div id="select-message" class="message-slot"></div>
         </section>
 
         <!-- The selected video -->
         <section id="file-section" class="card" aria-labelledby="file-title" hidden>
-          <h2 id="file-title">選んだ動画</h2>
+          <h2 id="file-title" data-i18n="file.title">選んだ動画</h2>
           <dl class="facts">
-            <div class="fact fact-wide"><dt>ファイル名</dt><dd id="info-name"></dd></div>
-            <div class="fact"><dt>サイズ</dt><dd id="info-size"></dd></div>
-            <div class="fact"><dt>長さ</dt><dd id="info-duration"></dd></div>
-            <div class="fact"><dt>解像度</dt><dd id="info-resolution"></dd></div>
-            <div class="fact"><dt>映像の形式</dt><dd id="info-video"></dd></div>
-            <div class="fact"><dt>音声</dt><dd id="info-audio"></dd></div>
+            <div class="fact fact-wide"><dt data-i18n="fact.name">ファイル名</dt><dd id="info-name"></dd></div>
+            <div class="fact"><dt data-i18n="fact.size">サイズ</dt><dd id="info-size"></dd></div>
+            <div class="fact"><dt data-i18n="fact.duration">長さ</dt><dd id="info-duration"></dd></div>
+            <div class="fact"><dt data-i18n="fact.resolution">解像度</dt><dd id="info-resolution"></dd></div>
+            <div class="fact"><dt data-i18n="fact.video">映像の形式</dt><dd id="info-video"></dd></div>
+            <div class="fact"><dt data-i18n="fact.audio">音声</dt><dd id="info-audio"></dd></div>
           </dl>
           <p id="info-note" class="note" hidden></p>
           <div class="actions">
-            <button type="button" id="change-file" class="button">別の動画を選ぶ</button>
-            <button type="button" id="clear-file" class="button button-quiet">選択を解除</button>
+            <button type="button" id="change-file" class="button" data-i18n="file.change">別の動画を選ぶ</button>
+            <button type="button" id="clear-file" class="button button-quiet" data-i18n="file.clear">選択を解除</button>
           </div>
         </section>
 
         <!-- 2. Settings -->
         <section class="card" aria-labelledby="settings-title">
-          <h2 id="settings-title"><span class="step" aria-hidden="true">2</span>変換の設定</h2>
-          <p class="section-lead">迷ったら、このままで大丈夫です。</p>
+          <h2 id="settings-title">
+            <span class="step" aria-hidden="true">2</span><span data-i18n="settings.title">変換の設定</span>
+          </h2>
+          <p class="section-lead" data-i18n="settings.lead">迷ったら、このままで大丈夫です。</p>
           <form id="settings" class="settings">
             <fieldset id="h264-mode" class="group" hidden>
-              <legend>この動画は、すでに H.264 形式です</legend>
+              <legend data-i18n="h264.legend">この動画は、すでに H.264 形式です</legend>
               <div class="choices choices-2">
                 <label class="choice">
                   <input type="radio" name="h264Mode" value="copy" checked />
-                  <span class="choice-title">画質はそのまま、MP4 に整える<span class="tag">おすすめ</span></span>
-                  <span class="choice-desc">映像を作り直さないので、画質が落ちず、すぐに終わります。</span>
+                  <span class="choice-title"
+                    ><span data-i18n="h264.copy">画質はそのまま、MP4 に整える</span
+                    ><span class="tag" data-i18n="tag.recommended">おすすめ</span></span
+                  >
+                  <span class="choice-desc" data-i18n="h264.copyDesc">映像を作り直さないので、画質が落ちず、すぐに終わります。</span>
                 </label>
                 <label class="choice">
                   <input type="radio" name="h264Mode" value="encode" />
-                  <span class="choice-title">下の設定で変換し直す</span>
-                  <span class="choice-desc">ファイルを小さくしたいときに。時間がかかります。</span>
+                  <span class="choice-title" data-i18n="h264.encode">下の設定で変換し直す</span>
+                  <span class="choice-desc" data-i18n="h264.encodeDesc">ファイルを小さくしたいときに。時間がかかります。</span>
                 </label>
               </div>
             </fieldset>
 
             <fieldset id="quality-group" class="group">
-              <legend>画質</legend>
+              <legend data-i18n="quality.legend">画質</legend>
               <div class="choices">
                 <label class="choice">
                   <input type="radio" name="quality" value="high" />
-                  <span class="choice-title">高画質</span>
-                  <span class="choice-desc">細かい文字もくっきり。ファイルは大きめです。</span>
+                  <span class="choice-title" data-i18n="quality.high">高画質</span>
+                  <span class="choice-desc" data-i18n="quality.highDesc">細かい文字もくっきり。ファイルは大きめです。</span>
                 </label>
                 <label class="choice">
                   <input type="radio" name="quality" value="standard" checked />
-                  <span class="choice-title">標準<span class="tag">おすすめ</span></span>
-                  <span class="choice-desc">画面の文字が読める画質で、サイズも控えめです。</span>
+                  <span class="choice-title"
+                    ><span data-i18n="choice.standard">標準</span
+                    ><span class="tag" data-i18n="tag.recommended">おすすめ</span></span
+                  >
+                  <span class="choice-desc" data-i18n="quality.standardDesc">画面の文字が読める画質で、サイズも控えめです。</span>
                 </label>
                 <label class="choice">
                   <input type="radio" name="quality" value="small" />
-                  <span class="choice-title">小さめ</span>
-                  <span class="choice-desc">ファイルを小さくします。細かい文字はぼやけることがあります。</span>
+                  <span class="choice-title" data-i18n="quality.small">小さめ</span>
+                  <span class="choice-desc" data-i18n="quality.smallDesc">ファイルを小さくします。細かい文字はぼやけることがあります。</span>
                 </label>
               </div>
             </fieldset>
 
             <details class="advanced">
-              <summary>詳細設定</summary>
+              <summary data-i18n="advanced.summary">詳細設定</summary>
               <fieldset id="speed-group" class="group">
-                <legend>変換の速さ</legend>
+                <legend data-i18n="speed.legend">変換の速さ</legend>
                 <div class="choices choices-2">
                   <label class="choice">
                     <input type="radio" name="speed" value="standard" checked />
-                    <span class="choice-title">標準<span class="tag">おすすめ</span></span>
-                    <span class="choice-desc">速さとファイルの小ささのバランスをとります。</span>
+                    <span class="choice-title"
+                      ><span data-i18n="choice.standard">標準</span
+                      ><span class="tag" data-i18n="tag.recommended">おすすめ</span></span
+                    >
+                    <span class="choice-desc" data-i18n="speed.standardDesc">速さとファイルの小ささのバランスをとります。</span>
                   </label>
                   <label class="choice">
                     <input type="radio" name="speed" value="fast" />
-                    <span class="choice-title">速い</span>
-                    <span class="choice-desc">3 割ほど早く終わりますが、ファイルは 2〜3 倍の大きさになります。</span>
+                    <span class="choice-title" data-i18n="speed.fast">速い</span>
+                    <span class="choice-desc" data-i18n="speed.fastDesc">3 割ほど早く終わりますが、ファイルは 2〜3 倍の大きさになります。</span>
                   </label>
                 </div>
               </fieldset>
               <fieldset id="size-group" class="group">
-                <legend>解像度</legend>
+                <legend data-i18n="size.legend">解像度</legend>
                 <div class="choices">
                   <label class="choice">
                     <input type="radio" name="maxSize" value="source" checked />
-                    <span class="choice-title">元のまま<span class="tag">おすすめ</span></span>
-                    <span class="choice-desc">縦横の大きさを変えません。</span>
+                    <span class="choice-title"
+                      ><span data-i18n="choice.original">元のまま</span
+                      ><span class="tag" data-i18n="tag.recommended">おすすめ</span></span
+                    >
+                    <span class="choice-desc" data-i18n="size.sourceDesc">縦横の大きさを変えません。</span>
                   </label>
                   <label class="choice">
                     <input type="radio" name="maxSize" value="1920" />
-                    <span class="choice-title">長い辺を 1920px まで</span>
-                    <span class="choice-desc">それより大きい動画だけ縮小します。縦横比は保ちます。</span>
+                    <span class="choice-title" data-i18n="size.1920">長い辺を 1920px まで</span>
+                    <span class="choice-desc" data-i18n="size.1920Desc">それより大きい動画だけ縮小します。縦横比は保ちます。</span>
                   </label>
                   <label class="choice">
                     <input type="radio" name="maxSize" value="1280" />
-                    <span class="choice-title">長い辺を 1280px まで</span>
-                    <span class="choice-desc">速く・小さくなります。細かい文字は読みにくくなります。</span>
+                    <span class="choice-title" data-i18n="size.1280">長い辺を 1280px まで</span>
+                    <span class="choice-desc" data-i18n="size.1280Desc">速く・小さくなります。細かい文字は読みにくくなります。</span>
                   </label>
                 </div>
               </fieldset>
               <fieldset id="fps-group" class="group">
-                <legend>なめらかさ（フレームレート）</legend>
+                <legend data-i18n="fps.legend">なめらかさ（フレームレート）</legend>
                 <div class="choices choices-2">
                   <label class="choice">
                     <input type="radio" name="fps" value="source" checked />
-                    <span class="choice-title">元のまま<span class="tag">おすすめ</span></span>
-                    <span class="choice-desc">動きのなめらかさを変えません。</span>
+                    <span class="choice-title"
+                      ><span data-i18n="choice.original">元のまま</span
+                      ><span class="tag" data-i18n="tag.recommended">おすすめ</span></span
+                    >
+                    <span class="choice-desc" data-i18n="fps.sourceDesc">動きのなめらかさを変えません。</span>
                   </label>
                   <label class="choice">
                     <input type="radio" name="fps" value="30" />
-                    <span class="choice-title">1秒30コマまで</span>
-                    <span class="choice-desc">60fps の動画なら、変換時間が 3 割ほど短くなります（ファイルは小さくなるとは限りません）。</span>
+                    <span class="choice-title" data-i18n="fps.30">1秒30コマまで</span>
+                    <span class="choice-desc" data-i18n="fps.30Desc">60fps の動画なら、変換時間が 3 割ほど短くなります（ファイルは小さくなるとは限りません）。</span>
                   </label>
                 </div>
               </fieldset>
               <fieldset id="audio-group" class="group">
-                <legend>音声</legend>
+                <legend data-i18n="audio.legend">音声</legend>
                 <div class="choices choices-2">
                   <label class="choice">
                     <input type="radio" name="audio" value="keep" checked />
-                    <span class="choice-title">残す<span class="tag">おすすめ</span></span>
-                    <span class="choice-desc">AAC 形式で保存します（元が AAC ならそのまま）。</span>
+                    <span class="choice-title"
+                      ><span data-i18n="audio.keep">残す</span
+                      ><span class="tag" data-i18n="tag.recommended">おすすめ</span></span
+                    >
+                    <span class="choice-desc" data-i18n="audio.keepDesc">AAC 形式で保存します（元が AAC ならそのまま）。</span>
                   </label>
                   <label class="choice">
                     <input type="radio" name="audio" value="remove" />
-                    <span class="choice-title">消す</span>
-                    <span class="choice-desc">映像だけにします。マイクの音を残したくないときにも。</span>
+                    <span class="choice-title" data-i18n="audio.remove">消す</span>
+                    <span class="choice-desc" data-i18n="audio.removeDesc">映像だけにします。マイクの音を残したくないときにも。</span>
                   </label>
                 </div>
               </fieldset>
@@ -196,10 +234,12 @@
 
         <!-- 3. Converting -->
         <section class="card" aria-labelledby="convert-title">
-          <h2 id="convert-title"><span class="step" aria-hidden="true">3</span>変換する</h2>
+          <h2 id="convert-title">
+            <span class="step" aria-hidden="true">3</span><span data-i18n="convert.title">変換する</span>
+          </h2>
           <p id="plan" class="plan" hidden></p>
           <button type="button" id="convert" class="button button-primary button-large">変換開始</button>
-          <p class="caution">
+          <p class="caution" data-i18n="convert.caution">
             変換中にこの画面を閉じたり、再読み込みしたりすると、変換は中断されます。
             スマートフォンでは、画面のロックやほかのアプリへの切り替えでも中断することがあります。
           </p>
@@ -217,94 +257,98 @@
               </p>
             </div>
             <p id="status-detail" class="status-detail" hidden></p>
-            <button type="button" id="cancel" class="button button-danger" hidden>キャンセル</button>
+            <button type="button" id="cancel" class="button button-danger" data-i18n="convert.cancel" hidden>キャンセル</button>
           </div>
           <div id="run-message" class="message-slot"></div>
         </section>
 
         <!-- 4. The result -->
         <section id="result-section" class="card card-result" aria-labelledby="result-title" hidden>
-          <h2 id="result-title" tabindex="-1"><span class="step" aria-hidden="true">4</span>保存する</h2>
+          <h2 id="result-title" tabindex="-1">
+            <span class="step" aria-hidden="true">4</span><span data-i18n="result.title">保存する</span>
+          </h2>
           <video id="preview" class="preview" controls playsinline preload="metadata"></video>
-          <p id="preview-note" class="note" hidden>
+          <p id="preview-note" class="note" data-i18n="result.noPreview" hidden>
             このブラウザでは H.264 の動画をプレビューできません。ダウンロードした動画は、ほかのアプリ（Windows のメディアプレーヤーや VLC など）で再生できます。
           </p>
-          <div class="compare" aria-label="ファイルサイズの比較">
+          <div class="compare" aria-label="ファイルサイズの比較" data-i18n-attr="aria-label:result.compare">
             <div class="compare-item">
-              <span class="compare-label">変換前</span>
+              <span class="compare-label" data-i18n="result.before">変換前</span>
               <span id="size-before" class="compare-value"></span>
             </div>
             <span class="compare-arrow" aria-hidden="true">→</span>
             <div class="compare-item">
-              <span class="compare-label">変換後</span>
+              <span class="compare-label" data-i18n="result.after">変換後</span>
               <span id="size-after" class="compare-value"></span>
             </div>
           </div>
           <p id="size-change" class="size-change"></p>
           <dl class="facts">
-            <div class="fact fact-wide"><dt>ファイル名</dt><dd id="out-name"></dd></div>
-            <div class="fact"><dt>映像の形式</dt><dd id="out-video"></dd></div>
-            <div class="fact"><dt>音声</dt><dd id="out-audio"></dd></div>
-            <div class="fact"><dt>解像度</dt><dd id="out-resolution"></dd></div>
-            <div class="fact"><dt>長さ</dt><dd id="out-duration"></dd></div>
+            <div class="fact fact-wide"><dt data-i18n="fact.name">ファイル名</dt><dd id="out-name"></dd></div>
+            <div class="fact"><dt data-i18n="fact.video">映像の形式</dt><dd id="out-video"></dd></div>
+            <div class="fact"><dt data-i18n="fact.audio">音声</dt><dd id="out-audio"></dd></div>
+            <div class="fact"><dt data-i18n="fact.resolution">解像度</dt><dd id="out-resolution"></dd></div>
+            <div class="fact"><dt data-i18n="fact.duration">長さ</dt><dd id="out-duration"></dd></div>
           </dl>
           <div class="actions">
-            <button type="button" id="download" class="button button-primary button-large">ダウンロード</button>
-            <button type="button" id="share" class="button button-large" hidden>共有・写真に保存</button>
+            <button type="button" id="download" class="button button-primary button-large" data-i18n="result.download">ダウンロード</button>
+            <button type="button" id="share" class="button button-large" data-i18n="result.share" hidden>共有・写真に保存</button>
           </div>
           <p class="note">
-            パソコンでは「ダウンロード」フォルダに、iPhone では「ファイル」アプリの「ダウンロード」に保存されます。
-            <span id="share-note" hidden>iPhone の写真アプリに入れたいときは「共有・写真に保存」から「ビデオを保存」を選んでください。</span>
+            <span data-i18n="result.savedWhere">パソコンでは「ダウンロード」フォルダに、iPhone では「ファイル」アプリの「ダウンロード」に保存されます。</span>
+            <span id="share-note" data-i18n="result.shareNote" hidden>iPhone の写真アプリに入れたいときは「共有・写真に保存」から「ビデオを保存」を選んでください。</span>
           </p>
           <div id="result-message" class="message-slot"></div>
-          <button type="button" id="restart" class="button button-quiet">別の動画を変換する</button>
+          <button type="button" id="restart" class="button button-quiet" data-i18n="result.restart">別の動画を変換する</button>
         </section>
 
         <!-- Privacy -->
         <section class="card card-quiet" aria-labelledby="privacy-title">
-          <h2 id="privacy-title">プライバシーと注意事項</h2>
+          <h2 id="privacy-title" data-i18n="privacy.title">プライバシーと注意事項</h2>
           <ul class="list">
             <li>
-              <strong>動画はアップロードされません。</strong>変換はすべて、このブラウザの中（お使いの端末の中）で行います。
+              <strong data-i18n="privacy.noUpload">動画はアップロードされません。</strong
+              ><span data-i18n="privacy.noUploadDetail">変換はすべて、このブラウザの中（お使いの端末の中）で行います。</span>
             </li>
-            <li>
+            <li data-i18n="privacy.traffic">
               通信するのは、このページと変換プログラム（FFmpeg・約 31MB）を、このサイト（GitHub Pages）から読み込むときだけです。
               2 回目以降は、ブラウザに保存された分が使われることがあります。
             </li>
-            <li>
+            <li data-i18n="privacy.noThirdParty">
               外部のサーバー・CDN・アクセス解析・広告は使っていません。ページの設定（Content Security Policy）で、このサイト以外との通信をブラウザが止めるようにしています。
             </li>
-            <li>動画の内容・ファイル名・映像や音声を、分析したり集めたりする機能はありません。</li>
-            <li>変換した動画には、撮影場所などのメタデータ（ファイルに付いている情報）を含めません。</li>
-            <li>
+            <li data-i18n="privacy.noCollect">動画の内容・ファイル名・映像や音声を、分析したり集めたりする機能はありません。</li>
+            <li data-i18n="privacy.language">選んだ表示言語だけは、次に開いたときのために、このブラウザの中に保存します。</li>
+            <li data-i18n="privacy.metadata">変換した動画には、撮影場所などのメタデータ（ファイルに付いている情報）を含めません。</li>
+            <li data-i18n="privacy.githubLogs">
               このサイトは GitHub Pages で公開されているため、一般的な Web サイトと同じく、GitHub 社のサーバーにアクセス記録（IP アドレスなど）が残る場合があります。
             </li>
           </ul>
-          <h3>大きな動画について</h3>
+          <h3 data-i18n="large.title">大きな動画について</h3>
           <ul class="list">
-            <li>
+            <li data-i18n="large.memory">
               変換には端末のメモリを使います。大きい・長い動画では、メモリが足りずに失敗したり、ブラウザが自動で再読み込みされたりすることがあります。
             </li>
-            <li>
+            <li data-i18n="large.limits">
               目安はパソコンで 2GB まで、スマートフォンで 500MB 程度までです。失敗するときは、ほかのアプリやタブを閉じるか、「詳細設定」で解像度を下げるか、動画を短く切ってからお試しください。
             </li>
-            <li>変換の速さは端末の性能しだいです。動画の長さの数倍の時間がかかることもあります。</li>
+            <li data-i18n="large.speed">変換の速さは端末の性能しだいです。動画の長さの数倍の時間がかかることもあります。</li>
           </ul>
         </section>
 
         <details id="log-details" class="card card-quiet log">
-          <summary>詳細ログ（うまくいかないとき用）</summary>
-          <p class="note">FFmpeg の出力です。画面に表示するだけで、どこにも送信されません。</p>
-          <pre id="log" class="log-text">（まだありません）</pre>
+          <summary data-i18n="log.summary">詳細ログ（うまくいかないとき用）</summary>
+          <p class="note" data-i18n="log.note">FFmpeg の出力です。画面に表示するだけで、どこにも送信されません。</p>
+          <pre id="log" class="log-text"></pre>
         </details>
       </main>
 
       <footer class="footer">
         <p>
-          使用ライブラリ：FFmpeg.wasm（@ffmpeg/ffmpeg __FFMPEG_VERSION__・MIT License）、
-          @ffmpeg/core __CORE_VERSION__（FFmpeg 5.1.4・x264 など・GPL-2.0-or-later）
+          <span data-i18n="footer.libraries">使用ライブラリ：</span>FFmpeg.wasm (@ffmpeg/ffmpeg __FFMPEG_VERSION__, MIT
+          License), @ffmpeg/core __CORE_VERSION__ (FFmpeg 5.1.4, x264, GPL-2.0-or-later)
         </p>
-        <p><a href="licenses.html">ライセンスとソースコード</a></p>
+        <p><a href="licenses.html" data-keep-lang data-i18n="footer.licenses">ライセンスとソースコード</a></p>
       </footer>
     </div>
   </body>

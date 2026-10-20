@@ -4,6 +4,8 @@
 import { Converter, browserSupported } from './converter.js';
 import { AppError, describeError } from './errors.js';
 import { DEFAULT_SETTINGS, planConversion } from './ffmpeg-args.js';
+import { initI18n, lang, onLanguageChange, t } from './i18n.js';
+import { codecLabel } from './media-info.js';
 import {
   fileExtension,
   formatBytes,
@@ -83,19 +85,33 @@ const state = {
   info: null,
   /** Why `file` could not be read, if it could not */
   probeError: null,
+  /** Length and size the browser read before ffprobe, if it could */
+  browserMeta: null,
   /** Incremented on every new selection, so that late results for an old one are dropped. */
   selection: 0,
   probing: false,
   converting: false,
-  /** @type {{ blob: Blob, url: string, name: string } | null} */
+  /** @type {{ blob: Blob, url: string, name: string, info: object | null, sourceSize: number } | null} */
   result: null,
   supported: true,
 };
 
 // ---------------------------------------------------------------------------
 // Messages and status
+//
+// What is on screen is kept (as message codes, string keys or functions) so
+// that it can be drawn again when the language is switched.
+
+/** @type {Map<HTMLElement, { error: unknown, onRetry?: () => void }>} */
+const shownMessages = new Map();
+const view = {
+  status: { name: 'idle', label: '', detail: '' },
+  /** @type {() => string} */
+  progressText: () => '',
+};
 
 function clearMessage(slot) {
+  shownMessages.delete(slot);
   slot.replaceChildren();
 }
 
@@ -106,7 +122,15 @@ function clearMessage(slot) {
  * @param {{ onRetry?: () => void }} [options]
  */
 function showMessage(slot, error, { onRetry } = {}) {
-  const message = describeError(error);
+  shownMessages.set(slot, { error, onRetry });
+  renderMessage(slot);
+  // A dropped file may be dropped anywhere on the page; bring the message into view.
+  if (!slot.closest('[hidden]')) slot.firstChild?.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
+}
+
+function renderMessage(slot) {
+  const { error, onRetry } = shownMessages.get(slot);
+  const message = describeError(error, lang());
   const box = document.createElement('div');
   box.className = `message message-${message.kind}`;
   box.setAttribute('role', message.kind === 'error' ? 'alert' : 'status');
@@ -117,10 +141,10 @@ function showMessage(slot, error, { onRetry } = {}) {
   title.textContent = message.title;
   const cause = document.createElement('p');
   cause.className = 'message-cause';
-  cause.textContent = `${message.kind === 'error' ? '原因：' : ''}${message.cause}`;
+  cause.textContent = message.kind === 'error' ? t('message.cause', { cause: message.cause }) : message.cause;
   const fixesTitle = document.createElement('p');
   fixesTitle.className = 'message-fixes-title';
-  fixesTitle.textContent = message.kind === 'error' ? '対処方法' : 'このあとは';
+  fixesTitle.textContent = t(message.kind === 'error' ? 'message.fixes' : 'message.next');
   const fixes = document.createElement('ul');
   fixes.className = 'message-fixes';
   for (const fix of message.fixes) {
@@ -134,38 +158,44 @@ function showMessage(slot, error, { onRetry } = {}) {
     const retry = document.createElement('button');
     retry.type = 'button';
     retry.className = 'button';
-    retry.textContent = 'もう一度試す';
+    retry.textContent = t('message.retry');
     retry.addEventListener('click', onRetry);
     box.append(retry);
   }
   slot.replaceChildren(box);
-  // A dropped file may be dropped anywhere on the page; bring the message into view.
-  if (!slot.closest('[hidden]')) box.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
 }
 
 /**
  * @param {'idle' | 'loading' | 'probing' | 'converting' | 'done' | 'error' | 'canceled'} name
- * @param {string} label
- * @param {{ detail?: string, progress?: boolean }} [options]
+ * @param {string} label key in strings.js
+ * @param {{ detail?: string, progress?: boolean }} [options] detail: key in strings.js
  */
 function setStatus(name, label, { detail = '', progress = false } = {}) {
+  view.status = { name, label, detail };
   el.statusPanel.hidden = name === 'idle';
   el.status.dataset.state = name;
-  el.statusLabel.textContent = label;
-  el.statusDetail.textContent = detail;
-  el.statusDetail.hidden = !detail;
   el.progressArea.hidden = !progress;
+  renderStatus();
 }
 
-function setProgress(ratio, timeText = '') {
+function renderStatus() {
+  const { label, detail } = view.status;
+  el.statusLabel.textContent = label ? t(label) : '';
+  el.statusDetail.textContent = detail ? t(detail) : '';
+  el.statusDetail.hidden = !detail;
+}
+
+/** @param {number} ratio @param {() => string} [text] the line under the bar */
+function setProgress(ratio, text = () => '') {
   const percent = Math.max(0, Math.min(100, Math.floor(ratio * 100)));
   el.progress.value = percent;
   el.progressPercent.textContent = `${percent}%`;
-  el.progressTime.textContent = timeText;
+  view.progressText = text;
+  el.progressTime.textContent = text();
 }
 
 function updateLog() {
-  el.log.textContent = converter.log || '（まだありません）';
+  el.log.textContent = converter.log || t('log.empty');
 }
 
 // ---------------------------------------------------------------------------
@@ -184,19 +214,19 @@ function readSettings() {
 function describePlan(info, plan) {
   const parts = [];
   if (plan.copyVideo) {
-    parts.push('映像：作り直さずに MP4 へ入れ直します（画質そのまま）');
+    parts.push(t('plan.copy'));
   } else {
-    parts.push(`映像：${info.video.label} → H.264 に変換`);
+    parts.push(t('plan.convert', { codec: codecLabel(info.video.codec, lang()) }));
     const size = formatResolution(plan.width, plan.height);
-    parts.push(plan.scaled ? `解像度：${size} に縮小` : `解像度：${size}（そのまま）`);
-    if (plan.fps) parts.push('1秒30コマまで');
+    parts.push(t(plan.scaled ? 'plan.scaled' : 'plan.keepSize', { size }));
+    if (plan.fps) parts.push(t('plan.fps30'));
   }
   if (plan.audio === 'none') {
-    parts.push(info.audio.length ? '音声：消す' : '音声：なし');
+    parts.push(t(info.audio.length ? 'plan.audioRemove' : 'plan.audioNone'));
   } else {
-    parts.push(plan.audio === 'copy' ? '音声：AAC のまま' : '音声：AAC に変換');
+    parts.push(t(plan.audio === 'copy' ? 'plan.audioCopy' : 'plan.audioAac'));
   }
-  return parts.join(' ／ ');
+  return parts.join(t('plan.separator'));
 }
 
 function updatePlan() {
@@ -230,9 +260,7 @@ function updateControls() {
   el.cancel.disabled = !busy;
 
   el.convert.disabled = !state.supported || busy || state.probing;
-  if (busy) el.convert.textContent = '変換中…';
-  else if (state.probing) el.convert.textContent = '動画を確認中…';
-  else el.convert.textContent = '変換開始';
+  el.convert.textContent = t(busy ? 'button.converting' : state.probing ? 'button.checking' : 'button.convert');
   el.convert.setAttribute('aria-busy', String(busy || state.probing));
   updatePlan();
 }
@@ -281,7 +309,7 @@ function readBrowserMetadata(file) {
   });
 }
 
-function pending(dd, text = '確認中…') {
+function pending(dd, text) {
   const span = document.createElement('span');
   span.className = 'pending';
   span.textContent = text;
@@ -302,45 +330,47 @@ function renderFileInfo() {
   el.infoName.textContent = file.name;
   el.infoSize.textContent = formatBytes(file.size);
   if (!info) {
-    for (const dd of [el.infoVideo, el.infoAudio]) pending(dd, state.probing ? '確認中…' : '—');
-    if (!el.infoDuration.dataset.known) pending(el.infoDuration, state.probing ? '確認中…' : '—');
-    if (!el.infoResolution.dataset.known) pending(el.infoResolution, state.probing ? '確認中…' : '—');
+    const placeholder = state.probing ? t('info.checking') : '—';
+    const meta = state.browserMeta;
+    for (const dd of [el.infoVideo, el.infoAudio]) pending(dd, placeholder);
+    if (meta?.duration) el.infoDuration.textContent = formatDuration(meta.duration, lang());
+    else pending(el.infoDuration, placeholder);
+    if (meta?.width) el.infoResolution.textContent = formatResolution(meta.width, meta.height);
+    else pending(el.infoResolution, placeholder);
     el.infoNote.hidden = true;
     return;
   }
-  el.infoDuration.textContent = formatDuration(info.durationSec);
+  el.infoDuration.textContent = formatDuration(info.durationSec, lang());
   el.infoResolution.textContent = formatResolution(info.video.displayWidth, info.video.displayHeight);
+  const videoLabel = codecLabel(info.video.codec, lang());
   if (info.h264Playable) {
-    withBadge(el.infoVideo, info.video.label, 'そのまま使えます', 'badge-ok');
+    withBadge(el.infoVideo, videoLabel, t('info.ready'), 'badge-ok');
   } else {
-    withBadge(el.infoVideo, info.video.label, 'H.264 に変換します', 'badge-convert');
+    withBadge(el.infoVideo, videoLabel, t('info.willConvert'), 'badge-convert');
   }
   el.infoAudio.textContent = info.audio.length
-    ? info.audio.map((a) => a.label).join('、') + (info.audio.length > 1 ? `（${info.audio.length}トラック）` : '')
-    : 'なし';
+    ? info.audio.map((a) => codecLabel(a.codec, lang())).join(t('list.separator')) +
+      (info.audio.length > 1 ? t('info.tracks', { count: info.audio.length }) : '')
+    : t('info.none');
 
   const notes = [];
-  if (info.video.hdr) {
-    notes.push('HDR（明るさの幅が広い）動画です。変換後は一般的な色合い（SDR）として保存されるため、色が薄く見えることがあります。');
-  }
-  if (info.video.codec === 'h264' && !info.h264Playable) {
-    notes.push('H.264 ですが、一部の再生環境で再生できない形式（10bit や 4:4:4 など）のため、変換し直します。');
-  }
+  if (info.video.hdr) notes.push(t('info.hdr'));
+  if (info.video.codec === 'h264' && !info.h264Playable) notes.push(t('info.h264Unplayable'));
   el.infoNote.textContent = notes.join(' ');
   el.infoNote.hidden = notes.length === 0;
 }
 
 async function loadFFmpeg() {
   if (converter.loaded) return;
-  setStatus('loading', '変換プログラム（FFmpeg）を準備しています…', {
-    detail: converter.downloaded ? '' : '初回は約 31MB をダウンロードします。2 回目以降は短時間で終わります。',
+  setStatus('loading', 'status.loading', {
+    detail: converter.downloaded ? '' : 'status.loadingDetail',
     progress: !converter.downloaded,
   });
-  setProgress(0, '');
+  setProgress(0);
   await converter.load({
     onProgress: ({ loaded, total }) => {
-      if (total) setProgress(loaded / total, `${formatBytes(loaded)} / ${formatBytes(total)}`);
-      else el.progressTime.textContent = formatBytes(loaded);
+      const text = total ? `${formatBytes(loaded)} / ${formatBytes(total)}` : formatBytes(loaded);
+      setProgress(total ? loaded / total : 0, () => text);
     },
   });
 }
@@ -361,10 +391,9 @@ async function selectFile(file) {
   state.file = file;
   state.info = null;
   state.probeError = null;
+  state.browserMeta = null;
   state.probing = true;
   const selection = ++state.selection;
-  delete el.infoDuration.dataset.known;
-  delete el.infoResolution.dataset.known;
   setStatus('idle', '');
   renderFileInfo();
   updateControls();
@@ -372,20 +401,18 @@ async function selectFile(file) {
   // Quick facts from the browser, while FFmpeg loads.
   readBrowserMetadata(file).then((meta) => {
     if (selection !== state.selection || state.info || !meta) return;
-    if (Number.isFinite(meta.duration) && meta.duration > 0) {
-      el.infoDuration.textContent = formatDuration(meta.duration);
-      el.infoDuration.dataset.known = '1';
-    }
-    if (meta.width && meta.height) {
-      el.infoResolution.textContent = formatResolution(meta.width, meta.height);
-      el.infoResolution.dataset.known = '1';
-    }
+    state.browserMeta = {
+      duration: Number.isFinite(meta.duration) && meta.duration > 0 ? meta.duration : null,
+      width: meta.width && meta.height ? meta.width : null,
+      height: meta.height,
+    };
+    renderFileInfo();
   });
 
   try {
     await loadFFmpeg();
     if (selection !== state.selection) return;
-    setStatus('probing', '動画を確認しています…');
+    setStatus('probing', 'status.probing');
     const info = await converter.probe(file);
     if (selection !== state.selection) return;
     state.info = info;
@@ -398,7 +425,7 @@ async function selectFile(file) {
         ? error
         : new AppError('UNREADABLE', { cause: error });
     if (state.probeError.code === 'LOAD_FAILED') {
-      setStatus('error', 'FFmpeg を読み込めませんでした');
+      setStatus('error', 'status.loadFailed');
       showMessage(el.runMessage, state.probeError, { onRetry: () => selectFile(file) });
     } else {
       setStatus('idle', '');
@@ -491,23 +518,24 @@ async function startConversion() {
 
   const started = performance.now();
   let ratio = 0;
-  const tick = () => {
+  const timeText = () => {
     const elapsed = (performance.now() - started) / 1000;
-    let text = `経過 ${formatClock(elapsed)}`;
+    let text = t('progress.elapsed', { time: formatClock(elapsed) });
     if (ratio >= 0.02 && elapsed >= 3 && ratio < 1) {
-      text += ` ・ 残り 約${formatClock((elapsed * (1 - ratio)) / ratio)}`;
+      text += t('progress.remaining', { time: formatClock((elapsed * (1 - ratio)) / ratio) });
     }
-    setProgress(ratio, text);
+    return text;
   };
+  const tick = () => setProgress(ratio, timeText);
   let timer = null;
 
   cancelRequested = false;
   try {
     await loadFFmpeg();
     if (cancelRequested) throw new AppError('CANCELED');
-    setStatus('converting', plan.copyVideo ? 'MP4 に入れ直しています…' : 'H.264 に変換しています…', {
+    setStatus('converting', plan.copyVideo ? 'status.copying' : 'status.converting', {
       progress: true,
-      detail: '変換が終わるまで、この画面を開いたままにしてください。',
+      detail: 'status.convertingDetail',
     });
     tick();
     timer = setInterval(tick, 1000);
@@ -522,17 +550,18 @@ async function startConversion() {
     tick();
     const blob = new Blob([output.data], { type: 'video/mp4' });
     showResult(blob, output.info, file);
-    setStatus('done', '変換が完了しました', { progress: true });
-    setProgress(1, `かかった時間 ${formatClock((performance.now() - started) / 1000)}`);
+    setStatus('done', 'status.done', { progress: true });
+    const took = formatClock((performance.now() - started) / 1000);
+    setProgress(1, () => t('progress.took', { time: took }));
     el.resultSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
     el.resultTitle.focus({ preventScroll: true });
   } catch (error) {
     clearInterval(timer);
     const appError = error instanceof AppError ? error : new AppError(error instanceof RangeError ? 'OUT_OF_MEMORY' : 'CONVERT_FAILED', { cause: error });
     if (appError.code === 'CANCELED') {
-      setStatus('canceled', '変換をキャンセルしました');
+      setStatus('canceled', 'status.canceled');
     } else {
-      setStatus('error', 'エラーが発生しました');
+      setStatus('error', 'status.error');
       console.error(error);
     }
     showMessage(el.runMessage, appError, { onRetry: startConversion });
@@ -548,7 +577,7 @@ async function startConversion() {
 
 function cancelConversion() {
   if (!state.converting) return;
-  if (!window.confirm('変換を中止しますか？ここまでの変換内容は失われます。')) return;
+  if (!window.confirm(t('confirm.cancel'))) return;
   el.cancel.disabled = true;
   cancelRequested = true;
   converter.cancel();
@@ -560,29 +589,37 @@ function cancelConversion() {
 function showResult(blob, outputInfo, sourceFile) {
   const url = URL.createObjectURL(blob);
   const name = outputFileName(sourceFile.name);
-  state.result = { blob, url, name };
+  state.result = { blob, url, name, info: outputInfo, sourceSize: sourceFile.size };
 
   el.previewNote.hidden = el.preview.canPlayType('video/mp4; codecs="avc1.640028"') !== '';
   el.preview.src = url;
+  el.outName.textContent = name;
   el.sizeBefore.textContent = formatBytes(sourceFile.size);
   el.sizeAfter.textContent = formatBytes(blob.size);
-  el.sizeChange.textContent =
-    formatSizeChange(sourceFile.size, blob.size) +
-    (blob.size > sourceFile.size * 1.05 ? '（画質を「小さめ」にすると小さくできます）' : '');
-  el.outName.textContent = name;
-  if (outputInfo?.video) {
-    const video = outputInfo.video;
-    el.outVideo.textContent = `${video.label}${video.pixFmt ? `・${video.pixFmt}` : ''}`;
-    el.outResolution.textContent = formatResolution(video.displayWidth, video.displayHeight);
-    el.outDuration.textContent = formatDuration(outputInfo.durationSec);
-    el.outAudio.textContent = outputInfo.audio.length ? outputInfo.audio.map((a) => a.label).join('、') : 'なし';
-  } else {
-    el.outVideo.textContent = 'H.264（AVC）';
-    for (const dd of [el.outResolution, el.outDuration, el.outAudio]) dd.textContent = '—';
-  }
-  el.download.textContent = 'ダウンロード';
+  renderResult();
   clearMessage(el.resultMessage);
   el.resultSection.hidden = false;
+}
+
+/** The parts of the result that depend on the language. */
+function renderResult() {
+  if (!state.result) return;
+  const { blob, info, sourceSize } = state.result;
+  el.sizeChange.textContent =
+    formatSizeChange(sourceSize, blob.size, lang()) + (blob.size > sourceSize * 1.05 ? t('result.largerHint') : '');
+  if (info?.video) {
+    const video = info.video;
+    el.outVideo.textContent =
+      codecLabel(video.codec, lang()) + (video.pixFmt ? t('result.detailSeparator') + video.pixFmt : '');
+    el.outResolution.textContent = formatResolution(video.displayWidth, video.displayHeight);
+    el.outDuration.textContent = formatDuration(info.durationSec, lang());
+    el.outAudio.textContent = info.audio.length
+      ? info.audio.map((a) => codecLabel(a.codec, lang())).join(t('list.separator'))
+      : t('info.none');
+  } else {
+    el.outVideo.textContent = codecLabel('h264', lang());
+    for (const dd of [el.outResolution, el.outDuration, el.outAudio]) dd.textContent = '—';
+  }
 }
 
 /** Drops the converted video and the memory behind it. */
@@ -673,7 +710,20 @@ function setUpDragAndDrop() {
   });
 }
 
+/** Draws everything the scripts wrote again, in the new language. */
+function redraw() {
+  renderStatus();
+  el.progressTime.textContent = view.progressText();
+  for (const slot of shownMessages.keys()) renderMessage(slot);
+  renderFileInfo();
+  renderResult();
+  updateControls();
+  updateLog();
+}
+
 function init() {
+  initI18n();
+  onLanguageChange(redraw);
   state.supported = browserSupported();
   if (!state.supported) {
     showMessage(el.unsupported, new AppError('UNSUPPORTED_BROWSER'));
@@ -716,6 +766,7 @@ function init() {
   });
   setUpDragAndDrop();
   updateControls();
+  updateLog();
 }
 
 init();

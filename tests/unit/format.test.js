@@ -28,6 +28,13 @@ test('formatDuration writes Japanese units', () => {
   assert.equal(formatDuration(null), '—');
 });
 
+test('formatDuration in English', () => {
+  assert.equal(formatDuration(0.4, 'en'), 'under 1 s');
+  assert.equal(formatDuration(12.4, 'en'), '12 s');
+  assert.equal(formatDuration(65, 'en'), '1 min 5 s');
+  assert.equal(formatDuration(3723, 'en'), '1 h 2 min 3 s');
+});
+
 test('formatClock', () => {
   assert.equal(formatClock(5), '0:05');
   assert.equal(formatClock(754), '12:34');
@@ -40,6 +47,9 @@ test('formatResolution and formatSizeChange', () => {
   assert.equal(formatSizeChange(100, 55), '45% 小さくなりました');
   assert.equal(formatSizeChange(100, 130), '30% 大きくなりました');
   assert.equal(formatSizeChange(100, 100.2), 'ほぼ同じ大きさです');
+  assert.equal(formatSizeChange(100, 55, 'en'), '45% smaller');
+  assert.equal(formatSizeChange(100, 130, 'en'), '30% larger');
+  assert.equal(formatSizeChange(100, 100.2, 'en'), 'About the same size');
 });
 
 test('outputFileName adds _H264 and always ends in .mp4', () => {

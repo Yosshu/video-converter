@@ -2,8 +2,8 @@
 // No DOM access, so it can be unit-tested in Node.
 
 const CODEC_LABELS = {
-  hevc: 'HEVC（H.265）',
-  h264: 'H.264（AVC）',
+  hevc: { ja: 'HEVC（H.265）', en: 'HEVC (H.265)' },
+  h264: { ja: 'H.264（AVC）', en: 'H.264 (AVC)' },
   av1: 'AV1',
   vp9: 'VP9',
   vp8: 'VP8',
@@ -20,10 +20,12 @@ const CODEC_LABELS = {
 };
 
 /** A readable name for an ffprobe codec_name. */
-export function codecLabel(codec) {
-  if (!codec) return '不明';
-  if (CODEC_LABELS[codec]) return CODEC_LABELS[codec];
-  if (codec.startsWith('pcm_')) return 'PCM（非圧縮）';
+export function codecLabel(codec, lang = 'ja') {
+  const en = lang === 'en';
+  if (!codec) return en ? 'Unknown' : '不明';
+  const label = CODEC_LABELS[codec];
+  if (label) return typeof label === 'string' ? label : label[en ? 'en' : 'ja'];
+  if (codec.startsWith('pcm_')) return en ? 'PCM (uncompressed)' : 'PCM（非圧縮）';
   return codec.toUpperCase();
 }
 
@@ -61,12 +63,12 @@ function bitDepthOf(pixFmt) {
  *   durationSec: number | null,
  *   formatName: string,
  *   video: null | {
- *     index: number, codec: string, label: string, profile: string, pixFmt: string,
+ *     index: number, codec: string, profile: string, pixFmt: string,
  *     width: number, height: number, displayWidth: number, displayHeight: number,
  *     rotation: number, fps: number | null, maxFps: number | null, bitDepth: number,
  *     hdr: boolean,
  *   },
- *   audio: { index: number, codec: string, label: string, channels: number }[],
+ *   audio: { index: number, codec: string, channels: number }[],
  *   streams: { index: number, type: string, codec: string }[],
  *   h264Playable: boolean,
  *   audioIsAac: boolean,
@@ -89,7 +91,6 @@ export function parseProbe(probe) {
     video = {
       index: videoStream.index,
       codec: videoStream.codec_name ?? '',
-      label: codecLabel(videoStream.codec_name),
       profile: videoStream.profile ?? '',
       pixFmt,
       width,
@@ -111,7 +112,6 @@ export function parseProbe(probe) {
     .map((s) => ({
       index: s.index,
       codec: s.codec_name ?? '',
-      label: codecLabel(s.codec_name),
       channels: Number(s.channels) || 0,
     }));
 

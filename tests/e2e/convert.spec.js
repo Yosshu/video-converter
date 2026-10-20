@@ -79,7 +79,7 @@ test('the page loads under a sub-path and explains itself', async ({ page }) => 
   await expect(page.locator('.footer')).toContainText('@ffmpeg/core 0.12.10');
   await expect(page.locator('#file-section')).toBeHidden();
   await expect(page.locator('#unsupported')).toBeHidden();
-  await page.locator('a[href="licenses.html"]').click();
+  await page.getByRole('link', { name: 'ライセンスとソースコード' }).click();
   await expect(page.locator('h1')).toHaveText('ライセンスとソースコード');
   await expect(page.locator('body')).toContainText('@ffmpeg/core 0.12.10');
   for (const href of ['licenses/GPL-2.0.txt', 'licenses/ffmpeg.wasm-MIT.txt']) {

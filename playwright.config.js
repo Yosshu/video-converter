@@ -14,6 +14,9 @@ export default defineConfig({
   reporter: process.env.CI ? [['github'], ['list']] : 'list',
   use: {
     baseURL,
+    // The page follows the browser language when none is chosen; the tests
+    // are written against the Japanese page unless they set it themselves.
+    locale: 'ja-JP',
     trace: 'retain-on-failure',
     // Lets a pre-installed Chromium be used instead of Playwright's own download.
     launchOptions: process.env.CHROMIUM_PATH ? { executablePath: process.env.CHROMIUM_PATH } : {},

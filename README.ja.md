@@ -2,10 +2,11 @@
 
 [English](README.md) | **日本語**
 
-**▶ https://yosshu.github.io/video-converter/**
+**▶ [https://yosshu.github.io/video-converter/](https://yosshu.github.io/video-converter/?lang=ja)**
 
 iPhone の画面録画を、どのパソコンでも扱いやすい **H.264 形式の MP4** に変換する Web アプリです。
 インストール不要・登録不要で、ブラウザで開くだけで使えます。
+画面は日本語と英語に対応しています（ページ上部で切り替えられます）。
 
 ## こんなときに
 
@@ -59,4 +60,4 @@ iPhone の画面録画は、拡張子が `.mp4` でも中身が HEVC（H.265）�
 | @ffmpeg/ffmpeg | 0.12.15 | MIT |
 | @ffmpeg/core（FFmpeg 5.1.4・x264 など） | 0.12.10 | GPL-2.0-or-later |
 
-含まれているライブラリの詳細とソースコードの入手先は、アプリ下部の「[ライセンスとソースコード](https://yosshu.github.io/video-converter/licenses.html)」にまとめています。
+含まれているライブラリの詳細とソースコードの入手先は、アプリ下部の「[ライセンスとソースコード](https://yosshu.github.io/video-converter/licenses.html?lang=ja)」にまとめています。

@@ -16,14 +16,20 @@ export function formatBytes(bytes) {
   return `${value.toFixed(digits)} ${units[unit]}`;
 }
 
-/** Seconds as "1分05秒" / "12秒" / "1時間02分03秒". */
-export function formatDuration(seconds) {
+/** Seconds as "1分05秒" / "12秒" / "1時間02分03秒" (English: "1 min 5 s", "12 s", "1 h 2 min 3 s"). */
+export function formatDuration(seconds, lang = 'ja') {
   if (!Number.isFinite(seconds) || seconds < 0) return '—';
-  if (seconds > 0 && seconds < 1) return '1秒未満';
+  const en = lang === 'en';
+  if (seconds > 0 && seconds < 1) return en ? 'under 1 s' : '1秒未満';
   const total = Math.round(seconds);
   const h = Math.floor(total / 3600);
   const m = Math.floor((total % 3600) / 60);
   const s = total % 60;
+  if (en) {
+    if (h > 0) return `${h} h ${m} min ${s} s`;
+    if (m > 0) return `${m} min ${s} s`;
+    return `${s} s`;
+  }
   const pad = (n) => String(n).padStart(2, '0');
   if (h > 0) return `${h}時間${pad(m)}分${pad(s)}秒`;
   if (m > 0) return `${m}分${pad(s)}秒`;
@@ -45,13 +51,15 @@ export function formatResolution(width, height) {
   return `${width} × ${height}`;
 }
 
-/** How the size changed, e.g. "45% 小さくなりました". */
-export function formatSizeChange(before, after) {
+/** How the size changed, e.g. "45% 小さくなりました" / "45% smaller". */
+export function formatSizeChange(before, after, lang = 'ja') {
   if (!before || !Number.isFinite(after)) return '';
+  const en = lang === 'en';
   const ratio = after / before;
   const percent = Math.round(Math.abs(1 - ratio) * 100);
-  if (percent === 0) return 'ほぼ同じ大きさです';
-  return ratio < 1 ? `${percent}% 小さくなりました` : `${percent}% 大きくなりました`;
+  if (percent === 0) return en ? 'About the same size' : 'ほぼ同じ大きさです';
+  if (ratio < 1) return en ? `${percent}% smaller` : `${percent}% 小さくなりました`;
+  return en ? `${percent}% larger` : `${percent}% 大きくなりました`;
 }
 
 /** "ScreenRecording.MP4" → "ScreenRecording_H264.mp4". */

@@ -3,23 +3,32 @@ import { test } from 'node:test';
 import { AppError, MESSAGES, classifyFailure, describeError } from '../../src/errors.js';
 import { parseProbe } from '../../src/media-info.js';
 
-test('every message has a title, a cause and at least one fix', () => {
+test('every message has a title, a cause and fixes in both languages', () => {
   for (const [code, message] of Object.entries(MESSAGES)) {
-    assert.ok(message.title, code);
-    assert.ok(message.cause, code);
-    assert.ok(message.fixes.length > 0, code);
+    for (const lang of ['ja', 'en']) {
+      assert.ok(message[lang].title, `${code} ${lang}`);
+      assert.ok(message[lang].cause, `${code} ${lang}`);
+      assert.ok(message[lang].fixes.length > 0, `${code} ${lang}`);
+    }
+    assert.equal(message.en.fixes.length, message.ja.fixes.length, code);
+    // The same placeholders in both languages.
+    const placeholders = (text) => JSON.stringify(text).match(/\{\w+\}/g)?.sort() ?? [];
+    assert.deepEqual(placeholders(message.en), placeholders(message.ja), code);
   }
 });
 
 test('describeError fills in details', () => {
-  const message = describeError(new AppError('TOO_LARGE', { detail: { limit: '2GB', size: '3.1 GB' } }));
+  const error = new AppError('TOO_LARGE', { detail: { limit: '2GB', size: '3.1 GB' } });
+  const message = describeError(error);
   assert.equal(message.code, 'TOO_LARGE');
   assert.equal(message.kind, 'error');
   assert.match(message.cause, /2GB までです（選ばれた動画: 3\.1 GB）/);
+  assert.match(describeError(error, 'en').cause, /up to 2GB \(selected video: 3\.1 GB\)/);
   assert.equal(describeError(new AppError('CANCELED')).kind, 'info');
   assert.equal(describeError(new AppError('LOAD_FAILED')).retry, true);
   // Anything unexpected is reported as a conversion error.
   assert.equal(describeError(new TypeError('x')).code, 'CONVERT_FAILED');
+  assert.equal(describeError(new TypeError('x'), 'en').title, 'Something went wrong while converting');
 });
 
 test('classifyFailure recognises broken input', () => {

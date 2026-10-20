@@ -29,7 +29,6 @@ test('reads an iPhone screen recording', () => {
   const info = parseProbe(iphoneScreenRecording);
   assert.equal(info.durationSec, 12.4);
   assert.equal(info.video.codec, 'hevc');
-  assert.equal(info.video.label, 'HEVC（H.265）');
   assert.equal(info.video.displayWidth, 886);
   assert.equal(info.video.displayHeight, 1920);
   assert.equal(info.video.maxFps, 60);
@@ -94,9 +93,14 @@ test('ignores cover art and handles audio-only files', () => {
   assert.equal(info.h264Playable, false);
 });
 
-test('codecLabel', () => {
-  assert.equal(codecLabel('h264'), 'H.264（AVC）');
+test('codecLabel in Japanese and English', () => {
+  assert.equal(codecLabel('hevc'), 'HEVC（H.265）');
+  assert.equal(codecLabel('h264', 'ja'), 'H.264（AVC）');
+  assert.equal(codecLabel('h264', 'en'), 'H.264 (AVC)');
   assert.equal(codecLabel('pcm_s16le'), 'PCM（非圧縮）');
+  assert.equal(codecLabel('pcm_s16le', 'en'), 'PCM (uncompressed)');
+  assert.equal(codecLabel('aac', 'en'), 'AAC');
   assert.equal(codecLabel('apac'), 'APAC');
   assert.equal(codecLabel(''), '不明');
+  assert.equal(codecLabel('', 'en'), 'Unknown');
 });
