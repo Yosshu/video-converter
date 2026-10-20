@@ -27,6 +27,7 @@ const $ = (id) => document.getElementById(id);
 const el = {
   unsupported: $('unsupported'),
   dropzone: $('dropzone'),
+  dropEmpty: $('drop-empty'),
   pick: $('pick'),
   fileInput: $('file-input'),
   selectMessage: $('select-message'),
@@ -87,6 +88,8 @@ const state = {
   probeError: null,
   /** Length and size the browser read before ffprobe, if it could */
   browserMeta: null,
+  /** Whether several files were dropped at once (only the first is used) */
+  droppedSeveral: false,
   /** Incremented on every new selection, so that late results for an old one are dropped. */
   selection: 0,
   probing: false,
@@ -323,39 +326,47 @@ function withBadge(dd, text, badgeText, badgeClass) {
   dd.replaceChildren(document.createTextNode(text), badge);
 }
 
+/** Puts a fact in its place, or hides the place while it is unknown. */
+function showFact(node, text) {
+  node.textContent = text ?? '';
+  node.hidden = !text;
+}
+
 function renderFileInfo() {
   const { file, info } = state;
+  // The drop area itself turns into the chosen video, so a drop visibly lands.
+  el.dropzone.classList.toggle('has-file', Boolean(file));
+  el.dropEmpty.hidden = Boolean(file);
   el.fileSection.hidden = !file;
   if (!file) return;
   el.infoName.textContent = file.name;
-  el.infoSize.textContent = formatBytes(file.size);
-  if (!info) {
-    const placeholder = state.probing ? t('info.checking') : '—';
-    const meta = state.browserMeta;
-    for (const dd of [el.infoVideo, el.infoAudio]) pending(dd, placeholder);
-    if (meta?.duration) el.infoDuration.textContent = formatDuration(meta.duration, lang());
-    else pending(el.infoDuration, placeholder);
-    if (meta?.width) el.infoResolution.textContent = formatResolution(meta.width, meta.height);
-    else pending(el.infoResolution, placeholder);
-    el.infoNote.hidden = true;
-    return;
-  }
-  el.infoDuration.textContent = formatDuration(info.durationSec, lang());
-  el.infoResolution.textContent = formatResolution(info.video.displayWidth, info.video.displayHeight);
-  const videoLabel = codecLabel(info.video.codec, lang());
-  if (info.h264Playable) {
-    withBadge(el.infoVideo, videoLabel, t('info.ready'), 'badge-ok');
-  } else {
-    withBadge(el.infoVideo, videoLabel, t('info.willConvert'), 'badge-convert');
-  }
-  el.infoAudio.textContent = info.audio.length
-    ? info.audio.map((a) => codecLabel(a.codec, lang())).join(t('list.separator')) +
-      (info.audio.length > 1 ? t('info.tracks', { count: info.audio.length }) : '')
-    : t('info.none');
+  showFact(el.infoSize, formatBytes(file.size));
 
   const notes = [];
-  if (info.video.hdr) notes.push(t('info.hdr'));
-  if (info.video.codec === 'h264' && !info.h264Playable) notes.push(t('info.h264Unplayable'));
+  if (state.droppedSeveral) notes.push(t('file.onlyFirst'));
+  if (!info) {
+    // Until ffprobe has run: what the browser could tell, if anything.
+    const meta = state.browserMeta;
+    showFact(el.infoDuration, meta?.duration ? formatDuration(meta.duration, lang()) : null);
+    showFact(el.infoResolution, meta?.width ? formatResolution(meta.width, meta.height) : null);
+    pending(el.infoVideo, state.probing ? t('info.checking') : '—');
+    pending(el.infoAudio, state.probing ? t('info.checking') : '—');
+  } else {
+    showFact(el.infoDuration, formatDuration(info.durationSec, lang()));
+    showFact(el.infoResolution, formatResolution(info.video.displayWidth, info.video.displayHeight));
+    const videoLabel = codecLabel(info.video.codec, lang());
+    if (info.h264Playable) {
+      withBadge(el.infoVideo, videoLabel, t('info.ready'), 'badge-ok');
+    } else {
+      withBadge(el.infoVideo, videoLabel, t('info.willConvert'), 'badge-convert');
+    }
+    el.infoAudio.textContent = info.audio.length
+      ? info.audio.map((a) => codecLabel(a.codec, lang())).join(t('list.separator')) +
+        (info.audio.length > 1 ? t('info.tracks', { count: info.audio.length }) : '')
+      : t('info.none');
+    if (info.video.hdr) notes.push(t('info.hdr'));
+    if (info.video.codec === 'h264' && !info.h264Playable) notes.push(t('info.h264Unplayable'));
+  }
   el.infoNote.textContent = notes.join(' ');
   el.infoNote.hidden = notes.length === 0;
 }
@@ -375,7 +386,7 @@ async function loadFFmpeg() {
   });
 }
 
-async function selectFile(file) {
+async function selectFile(file, { droppedSeveral = false } = {}) {
   if (state.converting) return;
   clearMessage(el.selectMessage);
   clearMessage(el.runMessage);
@@ -392,6 +403,7 @@ async function selectFile(file) {
   state.info = null;
   state.probeError = null;
   state.browserMeta = null;
+  state.droppedSeveral = droppedSeveral;
   state.probing = true;
   const selection = ++state.selection;
   setStatus('idle', '');
@@ -706,7 +718,7 @@ function setUpDragAndDrop() {
     if (el.pick.disabled) return;
     const files = Array.from(event.dataTransfer.files);
     if (files.length === 0) return;
-    selectFile(files[0]);
+    selectFile(files[0], { droppedSeveral: files.length > 1 });
   });
 }
 
@@ -733,7 +745,12 @@ function init() {
     event.stopPropagation();
     openPicker();
   });
-  el.dropzone.addEventListener('click', openPicker);
+  // Clicking anywhere in the empty drop area opens the picker; once a video
+  // is shown there, only its buttons act.
+  el.dropzone.addEventListener('click', (event) => {
+    if (event.target.closest('#file-section')) return; // e.g. "clear selection" must not reopen it
+    if (!state.file) openPicker();
+  });
   el.changeFile.addEventListener('click', openPicker);
   el.fileInput.addEventListener('change', () => {
     const file = el.fileInput.files?.[0];

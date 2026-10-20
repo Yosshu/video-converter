@@ -205,6 +205,83 @@ h3 {
   cursor: not-allowed;
   opacity: 0.6;
 }
+/* The drop area once a video is chosen: a compact "video to convert" row,
+   blue and left-aligned, unlike the green result card below. */
+.dropzone.has-file {
+  justify-items: stretch;
+  padding: 16px 18px;
+  border-style: solid;
+  border-color: var(--accent);
+  background: var(--accent-soft);
+  text-align: left;
+  cursor: default;
+}
+.dropzone.has-file.is-dragging {
+  border-style: dashed;
+}
+.dropzone-empty {
+  display: grid;
+  justify-items: center;
+  gap: 4px;
+}
+.selected {
+  display: grid;
+  gap: 4px;
+  min-width: 0;
+}
+.selected p {
+  margin: 0;
+}
+.selected-label {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  color: var(--accent);
+  font-size: 0.85rem;
+  font-weight: 700;
+}
+.selected-icon {
+  width: 18px;
+  height: 18px;
+  padding: 2px;
+  border-radius: 50%;
+  background: var(--accent);
+  fill: none;
+  stroke: var(--on-accent);
+  stroke-width: 3;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+.selected-name {
+  font-size: 1.1rem;
+  font-weight: 700;
+  overflow-wrap: anywhere;
+}
+.selected-meta,
+.selected-audio {
+  color: var(--muted);
+  font-size: 0.9rem;
+  font-variant-numeric: tabular-nums;
+}
+.selected-meta span + span:not([hidden])::before {
+  content: '·';
+  margin: 0 0.5em;
+}
+.selected-key {
+  margin-right: 0.5em;
+}
+.selected-format {
+  font-weight: 600;
+}
+.selected .note {
+  margin-top: 4px;
+}
+.selected-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 10px;
+}
 .dropzone-icon {
   width: 52px;
   height: 52px;

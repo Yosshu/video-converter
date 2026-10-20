@@ -26,6 +26,7 @@ const ja = {
   'info.h264Unplayable':
     'H.264 ですが、一部の再生環境で再生できない形式（10bit や 4:4:4 など）のため、変換し直します。',
   'list.separator': '、',
+  'file.onlyFirst': '複数のファイルがドロップされたため、最初の 1 本だけを読み込みました。',
 
   'plan.separator': ' ／ ',
   'plan.copy': '映像：作り直さずに MP4 へ入れ直します（画質そのまま）',
@@ -80,6 +81,7 @@ const en = {
   'info.h264Unplayable':
     'This is H.264, but in a form some players cannot play (such as 10-bit or 4:4:4), so it will be converted again.',
   'list.separator': ', ',
+  'file.onlyFirst': 'Several files were dropped; only the first one is used.',
 
   'plan.separator': ' / ',
   'plan.copy': 'Video: repackaged as MP4 without re-encoding (same quality)',
@@ -127,7 +129,7 @@ const en = {
   'select.size': 'File size: up to 2 GB (around 500 MB is a safer guide on phones)',
   'select.one': 'One video at a time',
 
-  'file.title': 'Selected video',
+  'file.title': 'Video to convert',
   'fact.name': 'File name',
   'fact.size': 'Size',
   'fact.duration': 'Length',

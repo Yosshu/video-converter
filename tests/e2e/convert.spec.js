@@ -266,8 +266,15 @@ test('explains files it cannot use', async ({ page }) => {
 test('a selection can be cleared and changed before converting', async ({ page }) => {
   await selectFile(page, 'hevc-screen.mp4');
   await waitUntilReady(page);
+  let pickerOpened = false;
+  page.on('filechooser', () => {
+    pickerOpened = true;
+  });
   await page.locator('#clear-file').click();
   await expect(page.locator('#file-section')).toBeHidden();
+  await expect(page.locator('#drop-empty')).toBeVisible();
+  await expect(page.locator('#dropzone')).not.toHaveClass(/has-file/);
+  expect(pickerOpened, 'clearing must not open the file picker').toBe(false);
   await page.locator('#convert').click();
   await expect(page.locator('#run-message [data-code="NO_FILE"]')).toBeVisible();
 
@@ -280,18 +287,25 @@ test('a selection can be cleared and changed before converting', async ({ page }
   await waitUntilReady(page);
 });
 
-test('accepts a dropped file', async ({ page }) => {
+test('a dropped file shows up where it was dropped', async ({ page }) => {
   const bytes = [...readFileSync(fixture('hevc-noaudio.mov'))];
   const dataTransfer = await page.evaluateHandle((data) => {
     const transfer = new DataTransfer();
     transfer.items.add(new File([new Uint8Array(data)], 'dropped.mov', { type: 'video/quicktime' }));
+    transfer.items.add(new File([new Uint8Array(data)], 'second.mov', { type: 'video/quicktime' }));
     return transfer;
   }, bytes);
   await page.locator('#dropzone').dispatchEvent('dragenter', { dataTransfer });
   await expect(page.locator('#dropzone')).toHaveClass(/is-dragging/);
   await page.locator('#dropzone').dispatchEvent('drop', { dataTransfer });
+  // The drop area itself now shows the video to convert.
+  await expect(page.locator('#dropzone')).toHaveClass(/has-file/);
+  await expect(page.locator('#drop-empty')).toBeHidden();
+  await expect(page.locator('#dropzone #file-section')).toBeVisible();
   await expect(page.locator('#info-name')).toHaveText('dropped.mov');
+  await expect(page.locator('#info-note')).toContainText('最初の 1 本だけ');
   await waitUntilReady(page);
+  await expect(page.locator('#info-resolution')).toHaveText('270 × 480');
   await expect(page.locator('#dropzone')).not.toHaveClass(/is-dragging/);
 });
 

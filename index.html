@@ -57,15 +57,41 @@
           <h2 id="select-title">
             <span class="step" aria-hidden="true">1</span><span data-i18n="select.title">動画を選ぶ</span>
           </h2>
+          <!--
+            Before a video is chosen this is the drop area; afterwards the same
+            box shows the chosen video (deliberately unlike the green result
+            card further down, so input and output are not confused).
+          -->
           <div id="dropzone" class="dropzone">
-            <svg class="dropzone-icon" viewBox="0 0 48 48" aria-hidden="true">
-              <rect x="6" y="10" width="28" height="28" rx="5" />
-              <path d="M34 20l9-5v18l-9-5" />
-              <path d="M20 19v10M15 24l5 5 5-5" />
-            </svg>
-            <p class="dropzone-title" data-i18n="select.drop">ここに動画をドラッグ＆ドロップ</p>
-            <p class="dropzone-or" data-i18n="select.or">または</p>
-            <button type="button" id="pick" class="button button-primary" data-i18n="select.button">動画を選ぶ</button>
+            <div id="drop-empty" class="dropzone-empty">
+              <svg class="dropzone-icon" viewBox="0 0 48 48" aria-hidden="true">
+                <rect x="6" y="10" width="28" height="28" rx="5" />
+                <path d="M34 20l9-5v18l-9-5" />
+                <path d="M20 19v10M15 24l5 5 5-5" />
+              </svg>
+              <p class="dropzone-title" data-i18n="select.drop">ここに動画をドラッグ＆ドロップ</p>
+              <p class="dropzone-or" data-i18n="select.or">または</p>
+              <button type="button" id="pick" class="button button-primary" data-i18n="select.button">動画を選ぶ</button>
+            </div>
+            <div id="file-section" class="selected" aria-live="polite" hidden>
+              <p class="selected-label">
+                <svg class="selected-icon" viewBox="0 0 24 24" aria-hidden="true">
+                  <path d="M5 12.5l4.5 4.5L19 7.5" />
+                </svg>
+                <span data-i18n="file.title">変換する動画</span>
+              </p>
+              <p id="info-name" class="selected-name"></p>
+              <p class="selected-meta">
+                <span id="info-size"></span><span id="info-duration"></span><span id="info-resolution"></span>
+              </p>
+              <p id="info-video" class="selected-format"></p>
+              <p class="selected-audio"><span class="selected-key" data-i18n="fact.audio">音声</span><span id="info-audio"></span></p>
+              <p id="info-note" class="note" hidden></p>
+              <div class="selected-actions">
+                <button type="button" id="change-file" class="button" data-i18n="file.change">別の動画を選ぶ</button>
+                <button type="button" id="clear-file" class="button button-quiet" data-i18n="file.clear">選択を解除</button>
+              </div>
+            </div>
             <input type="file" id="file-input" accept="video/*,.mp4,.mov,.m4v" hidden />
           </div>
           <ul class="hints">
@@ -74,24 +100,6 @@
             <li data-i18n="select.one">一度に変換できるのは 1 本です</li>
           </ul>
           <div id="select-message" class="message-slot"></div>
-        </section>
-
-        <!-- The selected video -->
-        <section id="file-section" class="card" aria-labelledby="file-title" hidden>
-          <h2 id="file-title" data-i18n="file.title">選んだ動画</h2>
-          <dl class="facts">
-            <div class="fact fact-wide"><dt data-i18n="fact.name">ファイル名</dt><dd id="info-name"></dd></div>
-            <div class="fact"><dt data-i18n="fact.size">サイズ</dt><dd id="info-size"></dd></div>
-            <div class="fact"><dt data-i18n="fact.duration">長さ</dt><dd id="info-duration"></dd></div>
-            <div class="fact"><dt data-i18n="fact.resolution">解像度</dt><dd id="info-resolution"></dd></div>
-            <div class="fact"><dt data-i18n="fact.video">映像の形式</dt><dd id="info-video"></dd></div>
-            <div class="fact"><dt data-i18n="fact.audio">音声</dt><dd id="info-audio"></dd></div>
-          </dl>
-          <p id="info-note" class="note" hidden></p>
-          <div class="actions">
-            <button type="button" id="change-file" class="button" data-i18n="file.change">別の動画を選ぶ</button>
-            <button type="button" id="clear-file" class="button button-quiet" data-i18n="file.clear">選択を解除</button>
-          </div>
         </section>
 
         <!-- 2. Settings -->
