@@ -1,8 +1,9 @@
 name: Deploy to GitHub Pages
 
+# Publishes whatever is on the repository's default branch (main, or any
+# other branch set as default in Settings → General).
 on:
   push:
-    branches: [main]
   workflow_dispatch:
 
 permissions:
@@ -16,6 +17,7 @@ concurrency:
 
 jobs:
   build:
+    if: github.ref_name == github.event.repository.default_branch
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4

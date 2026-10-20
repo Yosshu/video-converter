@@ -142,13 +142,14 @@ iPhone の画面録画をまねたテスト動画（HEVC・`hvc1`・可変フレ
 
 1. このリポジトリを GitHub に push します。
 2. GitHub のリポジトリ画面で **Settings → Pages → Build and deployment → Source** を **「GitHub Actions」** にします。
-3. `main` ブランチに push すると、`.github/workflows/pages.yml` が単体テスト → `npm run build` → `dist/` の公開を行います（Actions タブから手動実行もできます）。
+3. **デフォルトブランチ**（Settings → General で設定しているブランチ。通常は `main`）に push すると、`.github/workflows/pages.yml` が単体テスト → `npm run build` → `dist/` の公開を行います（Actions タブの「Deploy to GitHub Pages」から手動実行もできます）。
 4. `https://<ユーザー名>.github.io/<リポジトリ名>/` で開けます。
 
 補足：
 
 - 公開されるのは `dist/` の中身（約 31MB。ほとんどが `ffmpeg-core.wasm`）です。GitHub Pages では `.wasm` が正しい MIME タイプ（`application/wasm`）で配信されます。
-- GitHub Pages の初期設定では、公開できるのはリポジトリのデフォルトブランチ（通常 `main`）からです。空のリポジトリに最初に push したブランチがデフォルトブランチになるため、必要に応じて Settings → General で `main` をデフォルトにしてください。
+- 公開されるのはデフォルトブランチの内容だけです（ほかのブランチへの push では公開されません）。空のリポジトリに最初に push したブランチがデフォルトブランチになります。あとで `main` に切り替える場合は Settings → General でデフォルトブランチを変えてください。
+- Source を「Deploy from a branch」にすると、ビルド前のファイル（FFmpeg が入っていない状態）がそのまま公開されて動きません。必ず「GitHub Actions」を選んでください。
 - 公開先のパスはリポジトリ名で決まりますが、アプリ側の設定変更は不要です（すべて相対パスのため）。
 
 ## 依存関係とライセンス
