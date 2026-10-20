@@ -34,9 +34,9 @@ You don't need to change any settings. The defaults keep on-screen text readable
 - Optionally change the quality, resolution, frame rate, or remove the audio (under "Advanced settings").
 - Shows progress and an estimate of the time left, and can be cancelled.
 
-## Your video is not uploaded
+## Your video is not sent to any server
 
-All conversion happens inside the browser on your own device. Your video is never sent to any server.
+The video you choose is never sent to any server on the internet. The conversion runs on your own device.
 
 - The only network traffic is loading the page and the converter (FFmpeg, about 31 MB).
 - There is no analytics, and nothing collects your videos or file names.

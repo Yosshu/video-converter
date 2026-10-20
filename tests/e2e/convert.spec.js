@@ -76,7 +76,7 @@ test.beforeEach(async ({ page }, testInfo) => {
 test('the page loads under a sub-path and explains itself', async ({ page }) => {
   await expect(page).toHaveTitle('動画変換ツール');
   await expect(page.locator('h1')).toHaveText('動画変換ツール');
-  await expect(page.locator('.lead')).toHaveText('iPhoneの画面録画を、互換性の高いH.264形式のMP4に変換します');
+  await expect(page.locator('.lead')).toHaveText('iPhoneの画面録画を、Windows・Ubuntu・Macで再生できるH.264形式のMP4に変換します');
   await expect(page.locator('.hints')).toContainText('2GB まで');
   await expect(page.locator('#privacy-title')).toBeVisible();
   await expect(page.locator('.footer')).toContainText('@ffmpeg/ffmpeg 0.12.15');

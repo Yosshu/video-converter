@@ -115,13 +115,9 @@ const en = {
   // The page itself (data-i18n keys in index.html and licenses.html).
   'meta.title': 'Video Converter',
   'meta.description':
-    'Converts iPhone screen recordings to widely compatible H.264 MP4. The conversion runs in your browser, and your video is never uploaded.',
+    'Converts iPhone screen recordings to H.264 MP4 that plays on Windows, Ubuntu and Mac. The conversion runs on your own device, and your video is never sent to any server on the internet.',
   'app.title': 'Video Converter',
-  'app.lead': 'Converts iPhone screen recordings to widely compatible H.264 MP4',
-  'badges.label': 'Features',
-  'badges.browser': 'Converts in your browser',
-  'badges.noUpload': 'No uploads',
-  'badges.plays': 'Plays on Windows, Ubuntu and Mac',
+  'app.lead': 'Converts iPhone screen recordings to H.264 MP4 that plays on Windows, Ubuntu and Mac',
 
   'select.title': 'Choose a video',
   'select.drop': 'Drag and drop a video here',
@@ -197,8 +193,8 @@ const en = {
   'result.restart': 'Convert another video',
 
   'privacy.title': 'Privacy and notes',
-  'privacy.noUpload': 'Your video is not uploaded. ',
-  'privacy.noUploadDetail': 'All conversion happens inside this browser, on your own device.',
+  'privacy.notSent': 'The video you choose is never sent to any server on the internet. ',
+  'privacy.notSentDetail': 'The conversion runs on your own device.',
   'privacy.traffic':
     'The only network traffic is loading this page and the converter (FFmpeg, about 31 MB) from this site (GitHub Pages). On later visits, the copy saved by your browser may be used.',
   'privacy.noThirdParty':

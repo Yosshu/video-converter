@@ -94,7 +94,7 @@ test('the switch translates what is on screen, and is remembered', async ({ page
   await page.locator('[data-set-lang="ja"]').click();
   await expect(page.locator('h1')).toHaveText('動画変換ツール');
   await expect(page.locator('#info-video')).toContainText('そのまま使えます');
-  await expect(page.locator('.lead')).toHaveText('iPhoneの画面録画を、互換性の高いH.264形式のMP4に変換します');
+  await expect(page.locator('.lead')).toHaveText('iPhoneの画面録画を、Windows・Ubuntu・Macで再生できるH.264形式のMP4に変換します');
 
   // The last choice is used when the URL does not say…
   await page.locator('[data-set-lang="en"]').click();
