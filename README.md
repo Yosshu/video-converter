@@ -1,6 +1,6 @@
 # 動画変換ツール
 
-[English](README.en.md) | **日本語**
+**日本語** | [English](README.en.md)
 
 **▶ [https://yosshu.github.io/video-converter/](https://yosshu.github.io/video-converter/?lang=ja)**
 
