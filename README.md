@@ -1,63 +1,63 @@
-# Video Converter
+# 動画変換ツール
 
-**English** | [日本語](README.ja.md)
+[English](README.en.md) | **日本語**
 
-**▶ [https://yosshu.github.io/video-converter/](https://yosshu.github.io/video-converter/?lang=en)**
+**▶ [https://yosshu.github.io/video-converter/](https://yosshu.github.io/video-converter/?lang=ja)**
 
-A web app that converts iPhone screen recordings into **H.264 MP4** files that work on almost any computer.
-Nothing to install and no sign-up: just open it in your browser.
-The app is available in English and Japanese (switch at the top of the page).
+iPhone の画面録画を、どのパソコンでも扱いやすい **H.264 形式の MP4** に変換する Web アプリです。
+インストール不要・登録不要で、ブラウザで開くだけで使えます。
+画面は日本語と英語に対応しています（ページ上部で切り替えられます）。
 
-## Why
+## こんなときに
 
-iPhone screen recordings are often compressed with HEVC (H.265), even when the file ends in `.mp4`.
-Some setups on Windows or Ubuntu cannot play these files, and tools such as Claude Code may not be able to read them.
+iPhone の画面録画は、拡張子が `.mp4` でも中身が HEVC（H.265）という形式になっていることがあります。
+この形式は、Windows や Ubuntu の一部の環境で再生できなかったり、Claude Code などのツールに読み込めなかったりします。
 
-This app converts them to H.264 + AAC MP4, which plays and loads almost everywhere.
+このツールで変換すると、ほぼどこでも再生・処理できる H.264 + AAC の MP4 になります。
 
-## How to use
+## 使い方
 
-1. Open the URL above in your browser.
-2. Press "Choose a video", or drag and drop a video onto the page.
-   - On iPhone, choose "Photo Library" in the file picker to find your screen recordings.
-3. Press "Start converting".
-4. When it finishes, press "Download". The file is saved as `original-name_H264.mp4`.
+1. 上の URL をブラウザで開きます。
+2. 「動画を選ぶ」を押すか、動画を画面にドラッグ＆ドロップします。
+   - iPhone では、ファイル選択の画面で「写真ライブラリ」を選ぶと、画面収録した動画を選べます。
+3. 「変換開始」を押します。
+4. 終わったら「ダウンロード」で保存します。ファイル名は `元の名前_H264.mp4` になります。
 
-You don't need to change any settings. The defaults keep on-screen text readable while keeping the file small.
+設定は変えなくても大丈夫です。画面の文字が読める画質と、ファイルの小ささのバランスをとった初期設定になっています。
 
-## Features
+## できること
 
-- Converts HEVC (H.265) and other videos to H.264 + AAC MP4.
-- Keeps the resolution, aspect ratio and audio. Videos without audio work too.
-- Videos that are already H.264 are repackaged into MP4 without losing quality, so they finish in seconds.
-- Compare the file size before and after, and preview the result in the browser.
-- Optionally change the quality, resolution, frame rate, or remove the audio (under "Advanced settings").
-- Shows progress and an estimate of the time left, and can be cancelled.
+- HEVC（H.265）などの動画を、H.264 + AAC の MP4 に変換します。
+- 解像度・縦横比・音声はそのまま残します。音声のない動画も変換できます。
+- すでに H.264 の動画は、画質を落とさずに MP4 へ整えるだけなので、すぐに終わります。
+- 変換前後のファイルサイズを比べたり、ブラウザ上でプレビューしたりできます。
+- 必要なら、画質・解像度・フレームレート・音声の有無を変えられます（「詳細設定」）。
+- 変換の進み具合と残り時間の目安を表示し、途中でキャンセルもできます。
 
-## Your video is not sent to any server
+## 動画はサーバーに送られません
 
-The video you choose is never sent to any server on the internet. The conversion runs on your own device.
+選んだ動画は、インターネット上のサーバーには送られません。変換は、お使いの端末の中で行います。
 
-- The only network traffic is loading the page and the converter (FFmpeg, about 31 MB).
-- There is no analytics, and nothing collects your videos or file names.
-- Metadata such as the recording location is left out of the converted video.
+- 通信するのは、ページと変換プログラム（FFmpeg・約 31MB）を読み込むときだけです。
+- 動画の内容やファイル名を集めたり、アクセス解析をしたりする仕組みはありません。
+- 変換した動画には、撮影場所などのメタデータを含めません。
 
-## Things to know
+## 使うときの注意
 
-- **Keep the page open until the conversion finishes.** Closing or reloading it stops the conversion. On phones and tablets, locking the screen or switching to another app can stop it too.
-- **It takes time.** Depending on your device, it can take several times the length of the video.
-- **Large videos may fail.** The limit is 2 GB (on phones, around 500 MB is a safer guide). If it runs out of memory, lower the resolution in "Advanced settings", or trim the video first.
-- The first time, the converter (about 31 MB) is downloaded. Keep this in mind on mobile data.
-- HDR videos (such as videos from the iPhone camera) may look washed out after conversion.
-- Use an up-to-date version of Chrome, Edge, Safari or Firefox.
+- **変換が終わるまで、ページを開いたままにしてください。** 閉じたり再読み込みしたりすると中断されます。スマートフォンでは、画面のロックやほかのアプリへの切り替えでも止まることがあります。
+- **時間がかかります。** 端末の性能によりますが、動画の長さの数倍かかることもあります。
+- **大きな動画は失敗することがあります。** 上限は 2GB です（スマートフォンでは 500MB 程度までが目安）。メモリ不足で失敗したときは、「詳細設定」で解像度を下げるか、動画を短く切ってから試してください。
+- 初回は変換プログラム（約 31MB）をダウンロードします。モバイル回線の場合はご注意ください。
+- HDR の動画（iPhone のカメラで撮った動画など）は、変換後に色が薄く見えることがあります。
+- 最新版の Chrome・Edge・Safari・Firefox でお使いください。
 
-## Software used
+## 使用しているソフトウェア
 
-The conversion is done with [FFmpeg.wasm](https://github.com/ffmpegwasm/ffmpeg.wasm).
+変換には [FFmpeg.wasm](https://github.com/ffmpegwasm/ffmpeg.wasm) を使っています。
 
-| Name | Version | License |
+| 名前 | バージョン | ライセンス |
 | --- | --- | --- |
 | @ffmpeg/ffmpeg | 0.12.15 | MIT |
-| @ffmpeg/core (FFmpeg 5.1.4, x264 and others) | 0.12.10 | GPL-2.0-or-later |
+| @ffmpeg/core（FFmpeg 5.1.4・x264 など） | 0.12.10 | GPL-2.0-or-later |
 
-Details of the bundled libraries and where to get their source code are on the [licenses page](https://yosshu.github.io/video-converter/licenses.html?lang=en) (linked at the bottom of the app).
+含まれているライブラリの詳細とソースコードの入手先は、アプリ下部の「[ライセンスとソースコード](https://yosshu.github.io/video-converter/licenses.html?lang=ja)」にまとめています。
